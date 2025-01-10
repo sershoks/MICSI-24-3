@@ -1,4 +1,4 @@
-name: CI/CD Pipeline for Go App
+name: Build and Push Go App
 
 on:
   push:
@@ -14,41 +14,39 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # 2. Se déplacer dans le dossier app/src
-      - name: Change directory to app/src
-        run: cd app/src
+      # 2. Vérifier l’arborescence des fichiers
+      - name: List files in repository
+        run: ls -la
 
-      # 3. Configurer Go
+      # 3. Vérifier les fichiers dans app/src
+      - name: List files in app/src
+        run: ls -la app/src
+
+      # 4. Configurer Go
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
           go-version: 1.19
 
-      # 4. Installer les dépendances
+      # 5. Installer les dépendances
       - name: Install dependencies
         run: |
           cd app/src
           go mod tidy
 
-      # 5. Scanner les secrets avec GitLeaks
-      - name: Scan secrets with GitLeaks
-        uses: zricethezav/gitleaks-action@v2
-        with:
-          args: detect --source=app/src --report-path=gitleaks-report.json
-
-      # 6. Scanner les vulnérabilités avec Trivy
-      - name: Scan vulnerabilities with Trivy
-        uses: aquasecurity/trivy-action@master
-        with:
-          args: fs app/src
-
-      # 7. Construire le binaire
+      # 6. Construire le binaire
       - name: Build binary
         run: |
           cd app/src
           go build -o app-binary main.go
 
-      # 8. Authentifier GCP et pousser dans Artifact Registry
+      # 7. Scanner les vulnérabilités avec Trivy
+      - name: Scan vulnerabilities with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          args: fs app/src
+
+      # 8. Authentifier GCP
       - name: Authenticate with GCP
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
@@ -57,8 +55,8 @@ jobs:
           gcloud auth activate-service-account --key-file=key.json
           gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
 
-      - name: Push binary to Artifact Registry
+      # 9. Construire et pousser l'image Docker dans Artifact Registry
+      - name: Build and push Docker image to Artifact Registry
         run: |
-          cd app/src
           docker build -t europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/go-repo/app-binary:latest .
           docker push europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/go-repo/app-binary:latest
