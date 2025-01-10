@@ -9,3 +9,5 @@ Dans la Pipeline les étapes suivantes soivent apparaitre:
 Scan de sécurité afin de véfier que des secrets ne sont pas leak
 Scan de securité afin de vérfier que l'application n'inclue pas de vulnérabilité
 Build du binaire et Push dans Artefact Registry
+
+(build du .cloudbuild.yaml)

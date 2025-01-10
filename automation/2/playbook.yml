@@ -1,0 +1,68 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    # 1. Installer les dépendances système
+    - name: Install required packages
+      apt:
+        name:
+          - curl
+          - wget
+          - systemd
+        state: present
+        update_cache: true
+
+    # 2. Déployer le binaire de l'application
+    - name: Copy application binary
+      copy:
+        src: "{{ binary_path }}"
+        dest: /usr/local/bin/app-binary
+        mode: '0755'
+
+    # 3. Configurer l'application en tant que service systemd
+    - name: Configure systemd service
+      copy:
+        dest: /etc/systemd/system/app-binary.service
+        content: |
+          [Unit]
+          Description=Custom Application
+          After=network.target
+
+          [Service]
+          ExecStart=/usr/local/bin/app-binary
+          Restart=always
+          User=root
+
+          [Install]
+          WantedBy=multi-user.target
+      mode: '0644'
+
+    - name: Reload systemd
+      command: systemctl daemon-reload
+
+    - name: Enable application service
+      systemd:
+        name: app-binary
+        enabled: true
+
+    # 4. Installer Google Cloud Ops Agent
+    - name: Download Google Cloud Ops Agent installer
+      get_url:
+        url: https://dl.google.com/cloudagents/add-google-cloud-ops-agent-repo.sh
+        dest: /tmp/add-google-cloud-ops-agent-repo.sh
+        mode: '0755'
+
+    - name: Install Google Cloud Ops Agent
+      command: /tmp/add-google-cloud-ops-agent-repo.sh
+
+    - name: Install Ops Agent package
+      apt:
+        name: google-cloud-ops-agent
+        state: present
+
+    # 5. Activer Ops Agent
+    - name: Enable Ops Agent service
+      systemd:
+        name: google-cloud-ops-agent
+        enabled: true
+        state: started
