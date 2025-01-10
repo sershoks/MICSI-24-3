@@ -44,7 +44,7 @@ jobs:
       - name: Scan vulnerabilities with Trivy
         uses: aquasecurity/trivy-action@master
         with:
-          args: fs app/src
+          args: fs app/src --debug
 
       # 8. Authentifier GCP
       - name: Authenticate with GCP
