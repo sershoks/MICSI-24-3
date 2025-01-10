@@ -16,7 +16,6 @@ resource "google_project_service" "required_services" {
   project        = var.project_id
   service        = each.value
   disable_on_destroy = false
-  enable_on_create   = true
 }
 
 # Créer une registry dans Artifact Registry
