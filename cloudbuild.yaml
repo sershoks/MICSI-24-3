@@ -1,15 +1,14 @@
 options:
   default_logs_bucket_behavior: REGIONAL_USER_OWNED_BUCKET
 
-
 steps:
-  # 1 ..Vérifier les secrets avec GitLeaks
-  - name: "gcr.io/cloud-builders/git"
+  # 1. Installer et exécuter GitLeaks pour détecter les secrets
+  - name: "gcr.io/cloud-builders/curl"
     entrypoint: "sh"
     args:
       - "-c"
       - |
-        curl -sSfL https://github.com/zricethezav/gitleaks/releases/download/v8.17.0/gitleaks-linux-amd64 -o /usr/local/bin/gitleaks
+        curl -sSfL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o /usr/local/bin/gitleaks
         chmod +x /usr/local/bin/gitleaks
         gitleaks detect --source app/src --exit-code 1
 
