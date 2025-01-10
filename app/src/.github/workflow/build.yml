@@ -1,0 +1,64 @@
+name: CI/CD Pipeline for Go App
+
+on:
+  push:
+    branches:
+      - main  # Déclenche la pipeline sur un push vers la branche principale
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Télécharger le code source
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # 2. Se déplacer dans le dossier app/src
+      - name: Change directory to app/src
+        run: cd app/src
+
+      # 3. Configurer Go
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.19
+
+      # 4. Installer les dépendances
+      - name: Install dependencies
+        run: |
+          cd app/src
+          go mod tidy
+
+      # 5. Scanner les secrets avec GitLeaks
+      - name: Scan secrets with GitLeaks
+        uses: zricethezav/gitleaks-action@v2
+        with:
+          args: detect --source=app/src --report-path=gitleaks-report.json
+
+      # 6. Scanner les vulnérabilités avec Trivy
+      - name: Scan vulnerabilities with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          args: fs app/src
+
+      # 7. Construire le binaire
+      - name: Build binary
+        run: |
+          cd app/src
+          go build -o app-binary main.go
+
+      # 8. Authentifier GCP et pousser dans Artifact Registry
+      - name: Authenticate with GCP
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+        run: |
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > key.json
+          gcloud auth activate-service-account --key-file=key.json
+          gcloud config set project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Push binary to Artifact Registry
+        run: |
+          cd app/src
+          docker build -t europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/go-repo/app-binary:latest .
+          docker push europe-west1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/go-repo/app-binary:latest
