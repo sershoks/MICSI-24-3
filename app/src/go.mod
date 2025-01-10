@@ -2,7 +2,7 @@ module gitea.lcs.s3ns.tech/lcs-onboarding-info
 
 go 1.19
 
-require github.com/spf13/viper v1.19.0
+require github.com/spf13/viper v1.21
 
 require (
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
