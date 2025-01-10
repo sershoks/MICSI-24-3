@@ -1,3 +1,7 @@
+options:
+  default_logs_bucket_behavior: REGIONAL_USER_OWNED_BUCKET
+
+
 steps:
   # 1 ..Vérifier les secrets avec GitLeaks
   - name: "gcr.io/cloud-builders/git"
