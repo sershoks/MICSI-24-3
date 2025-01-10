@@ -7,7 +7,7 @@ data "google_project" "project" {
   project_id = var.project_id
 }
 
-# Activer les API nécessaires
+
 resource "google_project_service" "required_services" {
   for_each = toset([
     "cloudbuild.googleapis.com",
@@ -18,7 +18,6 @@ resource "google_project_service" "required_services" {
   disable_on_destroy = false
 }
 
-# Créer une registry dans Artifact Registry
 resource "google_artifact_registry_repository" "go_repo" {
   repository_id = "go-repo"
   project       = var.project_id
