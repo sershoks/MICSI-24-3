@@ -3,14 +3,14 @@ options:
 
 steps:
   # 1. Installer et exécuter GitLeaks pour détecter les secrets
-  - name: "gcr.io/cloud-builders/curl"
+  - name: "alpine"
     entrypoint: "sh"
     args:
       - "-c"
       - |
-        curl -sSfL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o /usr/local/bin/gitleaks
+        wget https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -O /usr/local/bin/gitleaks
         chmod +x /usr/local/bin/gitleaks
-        gitleaks detect --source app/src --exit-code 1
+        /usr/local/bin/gitleaks detect --source app/src --exit-code 1
 
   # 2. Scanner les vulnérabilités avec Trivy
   - name: "gcr.io/cloud-builders/docker"
