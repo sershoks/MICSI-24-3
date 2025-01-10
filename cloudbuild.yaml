@@ -1,5 +1,5 @@
 steps:
-  # 1 Vérifier les secrets avec GitLeaks
+  # 1 .Vérifier les secrets avec GitLeaks
   - name: "gcr.io/cloud-builders/git"
     entrypoint: "sh"
     args:
