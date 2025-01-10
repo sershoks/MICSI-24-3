@@ -8,6 +8,7 @@ steps:
     args:
       - "-c"
       - |
+        apk add --no-cache curl wget
         wget https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -O /usr/local/bin/gitleaks
         chmod +x /usr/local/bin/gitleaks
         /usr/local/bin/gitleaks detect --source app/src --exit-code 1
